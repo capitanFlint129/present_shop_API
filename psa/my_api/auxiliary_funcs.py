@@ -4,15 +4,19 @@ import configparser
 
 def is_import_json_valid(data):
     relatives = dict()
-    for citizen in data['citizens']:
-        if citizen['citizen_id'] in relatives:
-            return False
-        else:
-            relatives[citizen['citizen_id']] = set(citizen['relatives'])
-    for citizen in relatives:
-        for relative in relatives[citizen]:
-            if citizen not in relatives[relative]:
+    try:
+        for citizen in data['citizens']:
+            if citizen['citizen_id'] in relatives:
                 return False
+            else:
+                relatives[citizen['citizen_id']] = set(citizen['relatives'])
+    
+        for citizen in relatives:
+            for relative in relatives[citizen]:
+                if citizen not in relatives[relative] or relative == citizen:
+                    return False
+    except KeyError:
+        return False
     return True
 
 def create_import_conf():
@@ -22,8 +26,8 @@ def create_import_conf():
     with open("config.py", "w") as config_file:
         config.write(config_file)
 
-def generate_import_id(set_zero=False):
-    if set_zero==True or not os.path.exists("config.py"):
+def generate_import_id():
+    if not os.path.exists("import_config.py"):
         create_import_conf()
     else:
         config = configparser.ConfigParser()
