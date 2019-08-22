@@ -1,6 +1,7 @@
 import json
 import os
 import configparser
+import datetime
 
 def is_import_json_valid(data):
     relatives = dict()
@@ -9,6 +10,7 @@ def is_import_json_valid(data):
             if citizen['citizen_id'] in relatives:
                 return False
             else:
+                if citizen['relatives'] == None: return False
                 relatives[citizen['citizen_id']] = set(citizen['relatives'])
     
         for citizen in relatives:
@@ -19,11 +21,13 @@ def is_import_json_valid(data):
         return False
     return True
 
+
+
 def create_import_conf():
     config = configparser.ConfigParser()
     config.add_section("Import")
     config.set("Import", "last_import_id", "0")
-    with open("config.py", "w") as config_file:
+    with open("import_config.py", "w") as config_file:
         config.write(config_file)
 
 def generate_import_id():
@@ -31,13 +35,34 @@ def generate_import_id():
         create_import_conf()
     else:
         config = configparser.ConfigParser()
-        config.read("config.py")
+        config.read("import_config.py")
+        #if get_import_id == 9223372036854775807:
         config.set("Import", "last_import_id", str(get_import_id() + 1))
-        with open("config.py", "w") as config_file:
+        with open("import_config.py", "w") as config_file:
             config.write(config_file)
 
 def get_import_id():
     config = configparser.ConfigParser()
-    config.read("config.py")
+    config.read("import_config.py")
     import_id = int(config.get("Import", "last_import_id"))
     return import_id
+
+
+
+def add_present(month, relative):
+    for citizen in month:
+        if citizen['citizen_id'] == relative:
+            citizen['presents'] += 1
+            return
+    month.append({'citizen_id': relative, 'presents': 1})
+
+def calculate_age(born):
+    today = datetime.datetime.utcnow()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
+def add_age(cities, city, birth_date):
+    age = calculate_age(birth_date)
+    if city in cities:
+        cities[city].append(age)
+    else:
+        cities[city] = [age]

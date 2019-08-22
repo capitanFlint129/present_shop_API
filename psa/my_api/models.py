@@ -8,7 +8,7 @@ class CitizenManager(models.Manager):
 '''
 class Citizen(models.Model):
     #objects = CitizenManager()
-    import_id = models.IntegerField(default=0)
+    import_id = models.BigIntegerField()
     citizen_id = models.IntegerField() 
     town = models.CharField(max_length=255)#validate 1 digit or alpha
     street = models.CharField(max_length=255)#

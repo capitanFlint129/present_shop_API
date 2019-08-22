@@ -34,6 +34,8 @@ class CitizenSerializer(serializers.Serializer):
 
 
     def validate(self, attrs):
+        if attrs['citizen_id'] == 0:
+            print("AAAAAAAAA", attrs)
         #print('^^^^^^^^^', attrs.keys())
         #print('!!!!!!!!!', self.initial_data)
         #print('@@@@@@@@@', self.fields.keys())
@@ -43,7 +45,7 @@ class CitizenSerializer(serializers.Serializer):
             raise serializers.ValidationError("Unknown field(s): {}".format(", ".join(unknown)))
         return attrs
 
-    def create(self, validated_data):        
+    def create(self, validated_data):
         citizen = Citizen.objects.create(
             import_id = get_import_id(),
             citizen_id = validated_data['citizen_id'],
