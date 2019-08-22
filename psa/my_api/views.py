@@ -3,8 +3,8 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from my_api.models import Citizen
-from my_api.serializers import CitizenSerializer#, CitizenPatchSerializer
-from my_api.auxiliary_funcs import is_import_json_valid, generate_import_id, get_import_id, add_present, add_age
+from my_api.serializers import CitizenSerializer
+from my_api.auxiliary_funcs import is_relative_ties_valid, generate_import_id, get_import_id, add_present, add_age
 import numpy
 import json
 
@@ -12,21 +12,22 @@ import json
 def imports(request):
     if request.method == 'POST':
         data = JSONParser().parse(request)
-        if not is_import_json_valid(data):
+        if not is_relative_ties_valid(data):
             return HttpResponse(status=400)
-        serializer = CitizenSerializer(data=data['citizens'], many=True)
+        try:
+            serializer = CitizenSerializer(data=data['citizens'], many=True)
+        except KeyError:
+            return HttpResponse(status=400)
         generate_import_id()
-        ###print("!!!!!!!!!!" , serializer)excess here
-        if serializer.is_valid():#ne peredayotsa v validate
-            print('DATA', serializer)
+        if serializer.is_valid():
             serializer.save()
             return JsonResponse({
                 "data": {
                     "import_id": get_import_id()
                 }
             }, status=201)    
-        #print('ERRORS', serializer.errors, 'ERRORS')#############################################
-        return HttpResponse(status=400)######
+        #print('ERRORS', serializer.errors)
+        return HttpResponse(status=400)
     else: return HttpResponse(status=405)
 
 @csrf_exempt
@@ -35,11 +36,10 @@ def update_citizen(request, import_id, citizen_id):
         data = JSONParser().parse(request)
         citizen = Citizen.objects.filter(citizen_id=citizen_id).get(import_id__exact=import_id)
         if not data or 'citizen_id' in data:
-            return HttpResponse(status=400)######
+            return HttpResponse(status=400)
         serializer = CitizenSerializer(citizen, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            #print(serializer)
             return JsonResponse({
                 "data": serializer.data
             }, status=200)
@@ -83,9 +83,6 @@ def percentile(request, import_id):
                 "p75": float('{0:.2f}'.format(percentiles[1])), 
                 "p99": float('{0:.2f}'.format(percentiles[2]))
                 })
-        #encoder = json.JSONEncoder()
-        #encoder.FLOAT_REPR = lambda o: format(o, '.2f')
-        #, encoder=encoder
         return JsonResponse({
             "data": data
         }, status=200)

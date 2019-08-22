@@ -3,7 +3,7 @@ import os
 import configparser
 import datetime
 
-def is_import_json_valid(data):
+def is_relative_ties_valid(data):
     relatives = dict()
     try:
         for citizen in data['citizens']:

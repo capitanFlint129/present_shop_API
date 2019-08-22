@@ -33,6 +33,12 @@ class CitizenSerializer(serializers.Serializer):
         }
 
 
+    def to_internal_value(self, data):
+        unknown =  set(data.keys()) - set(self.fields.keys())
+        if unknown:
+            raise serializers.ValidationError("Unknown field(s): {}".format(", ".join(unknown)))
+        return super().to_internal_value(data)
+    '''
     def validate(self, attrs):
         if attrs['citizen_id'] == 0:
             print("AAAAAAAAA", attrs)
@@ -44,7 +50,7 @@ class CitizenSerializer(serializers.Serializer):
         if unknown:
             raise serializers.ValidationError("Unknown field(s): {}".format(", ".join(unknown)))
         return attrs
-
+    '''
     def create(self, validated_data):
         citizen = Citizen.objects.create(
             import_id = get_import_id(),
@@ -96,56 +102,3 @@ class CitizenSerializer(serializers.Serializer):
         instance.save()
         print('HERE')
         return instance
-'''
-class CitizenPatchSerializer(serializers.Serializer):
-
-    def __init__(self, import_id, citizen_id,*args, **kwargs):
-        self.import_id = import_id
-        self.citizen_id = citizen_id
-        return super().__init__(*args, **kwargs)
-
-    citizen_id = serializers.IntegerField(max_value=2147483647, min_value=0, required=False)
-    town = serializers.CharField(max_length=255, validators=has_digit_or_alpha, required=False)#validator (has alpha or digit)
-    street = serializers.CharField(max_length=255, validators=has_digit_or_alpha, required=False)#validator (has alpha or digit)
-    building = serializers.CharField(max_length=255, validators=has_digit_or_alpha, required=False)#validator (has alpha or digit)
-    apartment = serializers.IntegerField(max_value=2147483647, min_value=0, required=False)
-    name = serializers.CharField(max_length=255, required=False)
-    birth_date = serializers.DateField(input_formats=['%d.%m.%Y'], required=False)
-    gender = serializers.ChoiceField(choices=['male', 'female'], required=False)
-    relatives = serializers.ListField(child=serializers.IntegerField(min_value=0), required=False)
-
-    def validate(self, attrs):
-        unknown =  set(self.initial_data) - set(self.fields)
-        if unknown:
-            raise ValidationError("Unknown field(s): {}".format(", ".join(unknown)))
-        return attrs
-    
-    def create(self, validated_data):        
-        citizen = Citizen.objects.create(
-            import_id=get_import_id(),
-            citizen_id = validated_data['citizen_id'],
-            town = validated_data['town'],
-            street = validated_data['street'],
-            building = validated_data['building'],
-            apartment = validated_data['apartment'],
-            name = validated_data['name'],
-            birth_date = validated_data['birth_date'],
-            gender = validated_data['gender'],
-            relatives=json.dumps(validated_data['relatives'])
-            )
-        return citizen        
-    
-    def update(self, instance, validated_data):
-        instance.import_id = validated_data.get('import_id', instance.import_id)
-        instance.citizen_id = validated_data.get('citizen_id', instance.citizen_id)
-        instance.town = validated_data.get('town', instance.town)
-        instance.street = validated_data.get('street', instance.street)
-        instance.building = validated_data.get('building', instance.building)
-        instance.apartment = validated_data.get('apartment', instance.apartment)
-        instance.name = validated_data.get('name', instance.name)
-        instance.birth_date = validated_data.get('birth_date', instance.birth_date)
-        instance.gender = validated_data.get('gender', instance.gender)
-        instance.set_relatives(validated_data.get('relatives', instance.relatives))
-        instance.save()
-        return instance
-'''
