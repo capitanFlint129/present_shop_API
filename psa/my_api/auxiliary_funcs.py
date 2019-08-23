@@ -2,6 +2,7 @@ import json
 import os
 import configparser
 import datetime
+from my_api.models import Citizen
 
 def is_relative_ties_valid(data):
     relatives = dict()
@@ -26,20 +27,33 @@ def is_relative_ties_valid(data):
 def create_import_conf():
     config = configparser.ConfigParser()
     config.add_section("Import")
-    config.set("Import", "last_import_id", "0")
+    import_id_list = set(i.import_id for i in Citizen.objects.all())
+    config.set("Import", "import_id_list", str(list(import_id_list)))
+    config.set("Import", "last_import_id", "")
     with open("import_config.py", "w") as config_file:
         config.write(config_file)
 
 def generate_import_id():
     if not os.path.exists("import_config.py"):
         create_import_conf()
-    else:
-        config = configparser.ConfigParser()
-        config.read("import_config.py")
-        #if get_import_id == 9223372036854775807:
-        config.set("Import", "last_import_id", str(get_import_id() + 1))
-        with open("import_config.py", "w") as config_file:
-            config.write(config_file)
+
+    config = configparser.ConfigParser()
+    config.read("import_config.py")
+    import_id_list = json.loads(config.get("Import", "import_id_list"))
+    is_id_generated = False
+    for i in range(len(import_id_list)):
+        if i != import_id_list[i]:
+            config.set("Import", "last_import_id", str(i))
+            import_id_list.append(i)
+            import_id_list.sort()
+            is_id_generated = True
+            break
+    if not is_id_generated:
+        import_id_list.append(len(import_id_list))
+        config.set("Import", "last_import_id", str(len(import_id_list)))
+    config.set("Import", "import_id_list", str(import_id_list))
+    with open("import_config.py", "w") as config_file:
+        config.write(config_file)
 
 def get_import_id():
     config = configparser.ConfigParser()

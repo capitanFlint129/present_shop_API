@@ -27,7 +27,7 @@ class CitizenSerializer(serializers.Serializer):
             "building": citizen.building,
             "apartment": citizen.apartment,
             "name": citizen.name,
-            "birth_date": citizen.birth_date,
+            "birth_date": citizen.birth_date.strftime('%d.%m.%Y'),
             "gender": citizen.gender,
             "relatives": citizen.get_relatives(),
         }
@@ -81,24 +81,19 @@ class CitizenSerializer(serializers.Serializer):
 
         for citizen_id in (current_relatives - new_relatives):
             citizen = Citizen.objects.filter(citizen_id=citizen_id).get(import_id__exact=instance.import_id)
-            print('REL', citizen.get_relatives(), 'ID', instance.citizen_id)
             new_list = citizen.get_relatives()
             new_list.remove(instance.citizen_id)
-            print('NEW_LIST', new_list)
             citizen.set_relatives(new_list)
             citizen.save()
         
         for citizen_id in (new_relatives - current_relatives):
             citizen = Citizen.objects.filter(citizen_id=citizen_id).get(import_id__exact=instance.import_id)
-            print('REL', citizen.get_relatives(), 'ID', instance.citizen_id)
             new_list = citizen.get_relatives()
             new_list.append(instance.citizen_id)
-            print('NEW_LIST', new_list)
             citizen.set_relatives(new_list)
             citizen.save()
 
         instance.set_relatives(validated_data.get('relatives', instance.relatives))
 
         instance.save()
-        print('HERE')
         return instance

@@ -34,7 +34,10 @@ def imports(request):
 def update_citizen(request, import_id, citizen_id):
     if request.method == "PATCH":
         data = JSONParser().parse(request)
-        citizen = Citizen.objects.filter(citizen_id=citizen_id).get(import_id__exact=import_id)
+        try:
+            citizen = Citizen.objects.filter(citizen_id=citizen_id).get(import_id__exact=import_id)
+        except Citizen.DoesNotExist:
+            return HttpResponse(status=404) 
         if not data or 'citizen_id' in data:
             return HttpResponse(status=400)
         serializer = CitizenSerializer(citizen, data=data, partial=True)
@@ -43,12 +46,16 @@ def update_citizen(request, import_id, citizen_id):
             return JsonResponse({
                 "data": serializer.data
             }, status=200)
+        return HttpResponse(status=400)        
     else: return HttpResponse(status=405)
 
 @csrf_exempt
 def show_citizens(request, import_id):
     if request.method == "GET":
-        citizens = Citizen.objects.filter(import_id=import_id)
+        try:
+            citizens = Citizen.objects.filter(import_id=import_id)
+        except Citizen.DoesNotExist:
+            return HttpResponse(status=404) 
         serializer = CitizenSerializer(citizens, many=True)
         return JsonResponse({
             "data": serializer.data
@@ -60,9 +67,12 @@ def birthdays(request, import_id):
     if request.method == "GET":
         months = {"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], 
         "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}
-        for citizen in Citizen.objects.filter(import_id=import_id):
-            for relative in citizen.get_relatives():
-                add_present(months[str(citizen.birth_date.month)], relative)
+        try:
+            for citizen in Citizen.objects.filter(import_id=import_id):
+                for relative in citizen.get_relatives():
+                    add_present(months[str(citizen.birth_date.month)], relative)
+        except Citizen.DoesNotExist:
+            return HttpResponse(status=404)
         return JsonResponse({
             "data": months
         }, status=200)
@@ -72,8 +82,11 @@ def birthdays(request, import_id):
 def percentile(request, import_id):
     if request.method == "GET":
         cities = dict()
-        for citizen in Citizen.objects.filter(import_id=import_id):
-            add_age(cities, citizen.town, citizen.birth_date)
+        try:
+            for citizen in Citizen.objects.filter(import_id=import_id):
+                add_age(cities, citizen.town, citizen.birth_date)
+        except Citizen.DoesNotExist:
+            return HttpResponse(status=404)
         data = []
         for city in cities:
             percentiles = numpy.percentile(cities[city], [50, 75, 99], interpolation='linear')
