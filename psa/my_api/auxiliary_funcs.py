@@ -29,7 +29,7 @@ def create_import_conf():
     config.add_section("Import")
     import_id_list = set(i.import_id for i in Citizen.objects.all())
     config.set("Import", "import_id_list", str(list(import_id_list)))
-    config.set("Import", "last_import_id", "")
+    config.set("Import", "last_import_id", "0")
     with open("import_config.py", "w") as config_file:
         config.write(config_file)
 
@@ -39,6 +39,9 @@ def generate_import_id():
 
     config = configparser.ConfigParser()
     config.read("import_config.py")
+    last_import_id = config.get("Import", "last_import_id")
+    if last_import_id == 9223372036854775807:
+        create_import_conf()
     import_id_list = json.loads(config.get("Import", "import_id_list"))
     is_id_generated = False
     for i in range(len(import_id_list)):

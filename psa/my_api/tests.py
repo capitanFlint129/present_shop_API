@@ -349,7 +349,7 @@ def generate_import(count):
             rel = list(relatives[i])
         imp["citizens"].append({
             "citizen_id": i,
-            "town": str(random.randint(1, 10000)),
+            "town": str(random.randint(1, 100)),
             "street": str(random.randint(1, 1000)),
             "building": str(random.randint(1, 1000)),
             "apartment": random.randint(1, 10000),
