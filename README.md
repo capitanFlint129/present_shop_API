@@ -4,17 +4,7 @@ RESTful API для магазина подарков
 1) Обновляем пакеты:
     apt-get update
     apt-get upgrade
-2) Добавляем пользователя:
-    adduser entrant
-3) Добавляем текстовый редактор:
-    apt-get install nano
-4) Добавляем пользователю права исполнять команды от имени root (sudo):
-    nano /etc/sudoers
-    находим строку:
-    root    ALL=(ALL:ALL) ALL
-    сразу после нее вставляем:
-    myuser    ALL=(ALL:ALL) ALL
-5) Устанавливаем необходимые пакеты:
+2) Устанавливаем необходимые пакеты:
     sudo apt-get install mysql-server python-mysqldb python-profiler w3m python-setuptools libmysqlclient-dev python-dev supervisor nginx
 # Развертывание
 1) Установим virtualenv:
