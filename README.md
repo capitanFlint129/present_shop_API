@@ -46,6 +46,10 @@ RESTful API для магазина подарков
 7) Настраиваем gunicorn и supervisor:
     sudo ln -sf /home/entrant/backend_school_project/present_shop_API/etc/psa.conf /etc/supervisor/conf.d/psa.conf
     sudo update-rc.d supervisor enable
+    sudo service supervisor start
+    sudo supervisorctl reread
+    sudo supervisorctl update
+    sudo supervisorctl status psa
 # Запуск тестов
 Для запуска тестов необходимо выполнить следующую команду:
 /home/entrant/backend_school_project/env/bin/python /home/entrant/backend_school_project/present_shop_API/psa/manage.py test
