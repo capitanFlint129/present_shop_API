@@ -1,10 +1,7 @@
 # present_shop_API
 RESTful API для магазина подарков
 # Установка
-1) Обновляем пакеты:
-    apt-get update
-    apt-get upgrade
-2) Устанавливаем необходимые пакеты:
+Устанавливаем необходимые пакеты:
     sudo apt-get install mysql-server python-mysqldb python-profiler w3m python-setuptools libmysqlclient-dev python-dev supervisor nginx
 # Развертывание
 1) Установим virtualenv:
