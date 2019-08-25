@@ -29,7 +29,6 @@ def imports(request):
                     "import_id": get_import_id()
                 }
             }, status=201)    
-        print('ERRORS', serializer.errors)
         return HttpResponse(status=400)
     else: 
         return HttpResponse(status=405)
@@ -59,7 +58,6 @@ def update_citizen(request, import_id, citizen_id):
             return JsonResponse({
                 "data": serializer.data
             }, status=200)
-        print('ERRORS', serializer.errors)
         return HttpResponse(status=400)        
     else: 
         return HttpResponse(status=405)

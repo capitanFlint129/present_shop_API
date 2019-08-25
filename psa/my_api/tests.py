@@ -152,7 +152,7 @@ class UpdateTests(APITestCase):
         url = reverse('update-citizen', kwargs={'citizen_id': citizen_id, "import_id": get_import_id()})
         last_data = CitizenSerializer(Citizen.objects.filter(citizen_id=citizen_id).get(import_id__exact=get_import_id())).data
         last_realtives = last_data['relatives']
-        data = {"relatives": count + 1000}
+        data = {"relatives": [count + 1000]}
         response = self.client.patch(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -359,6 +359,4 @@ def generate_import(count):
             "gender": random.choice(["male", "female"]),
             "relatives": rel
         })
-    with open("generated_import.txt", "w") as out:
-        out.write(str(imp))
     return imp

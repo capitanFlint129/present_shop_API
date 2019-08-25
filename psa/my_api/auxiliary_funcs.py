@@ -7,14 +7,19 @@ from my_api.models import Citizen
 def is_relative_ties_valid(data):
     relatives = dict()
     try:
-        if not data['citizens']:
-            return False
+        #if not data['citizens']:
+        #    return False
         for citizen in data['citizens']:
             if citizen['citizen_id'] in relatives:
                 return False
             else:
                 if citizen['relatives'] == None: return False
-                relatives[citizen['citizen_id']] = set(citizen['relatives'])
+                relatives[citizen['citizen_id']] = set()
+                for relative in citizen['relatives']:
+                    if relative in relatives[citizen['citizen_id']] or relative == citizen['citizen_id']:
+                        return False
+                    else:
+                        relatives[citizen['citizen_id']].add(relative)
     
         for citizen in relatives:
             for relative in relatives[citizen]:
