@@ -1,14 +1,20 @@
 # present_shop_API
 RESTful API для магазина подарков
 # Установка
-Устанавливаем необходимые пакеты:
+1) Обновляем пакеты:
+    sudo apt-get update
+    sudo apt-get upgrade
+2) Устанавливаем необходимые пакеты:
     sudo apt-get install mysql-server python-mysqldb python-profiler w3m python-setuptools libmysqlclient-dev python-dev supervisor nginx
+    sudo apt install python-pip
 # Развертывание
 1) Установим virtualenv:
-    sudo easy_install virtualenv
+    pip3 install virtualenv
 2) Создаем папку с проектом и виртуальной средой:
     mkdir backend_school_project
     cd backend_school_project
+    mkdir present_shop_API
+    cd present_shop_API
     git clone https://github.com/capitanFlint129/present_shop_API.git /home/entrant/backend_school_project
 3) Создаем вирутальную среду, активируем ее и скачиваем нужные пакеты:
     virtualenv env
