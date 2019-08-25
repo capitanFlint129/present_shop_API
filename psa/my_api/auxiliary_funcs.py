@@ -7,6 +7,8 @@ from my_api.models import Citizen
 def is_relative_ties_valid(data):
     relatives = dict()
     try:
+        if not data['citizens']:
+            return False
         for citizen in data['citizens']:
             if citizen['citizen_id'] in relatives:
                 return False
@@ -27,36 +29,35 @@ def is_relative_ties_valid(data):
 def create_import_conf():
     config = configparser.ConfigParser()
     config.add_section("Import")
-    import_id_list = set(i.import_id for i in Citizen.objects.all())
-    config.set("Import", "import_id_list", str(list(import_id_list)))
-    config.set("Import", "last_import_id", "0")
+    import_id_list = sorted(list(set(i.import_id for i in Citizen.objects.all())))
+    is_generated = False
+    for i in range(len(import_id_list)):
+        if i != import_id_list[i]:
+            config.set("Import", "last_import_id", str(i))
+            is_generated = True
+    
+    if not is_generated:
+        config.set("Import", "last_import_id", str(len(import_id_list)))
+
     with open("import_config.py", "w") as config_file:
         config.write(config_file)
 
 def generate_import_id():
     if not os.path.exists("import_config.py"):
         create_import_conf()
+    else:
+        config = configparser.ConfigParser()
+        config.read("import_config.py")
+        last_import_id = int(config.get("Import", "last_import_id"))
+        import_id_set = set(i.import_id for i in Citizen.objects.all())
+        while last_import_id in import_id_set:
+            if last_import_id == 9223372036854775807:
+                create_import_conf()
+            last_import_id += 1
 
-    config = configparser.ConfigParser()
-    config.read("import_config.py")
-    last_import_id = config.get("Import", "last_import_id")
-    if last_import_id == 9223372036854775807:
-        create_import_conf()
-    import_id_list = json.loads(config.get("Import", "import_id_list"))
-    is_id_generated = False
-    for i in range(len(import_id_list)):
-        if i != import_id_list[i]:
-            config.set("Import", "last_import_id", str(i))
-            import_id_list.append(i)
-            import_id_list.sort()
-            is_id_generated = True
-            break
-    if not is_id_generated:
-        import_id_list.append(len(import_id_list))
-        config.set("Import", "last_import_id", str(len(import_id_list)))
-    config.set("Import", "import_id_list", str(import_id_list))
-    with open("import_config.py", "w") as config_file:
-        config.write(config_file)
+        config.set("Import", "last_import_id", str(last_import_id))
+        with open("import_config.py", "w") as config_file:
+            config.write(config_file)
 
 def get_import_id():
     config = configparser.ConfigParser()

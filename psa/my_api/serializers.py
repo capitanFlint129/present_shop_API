@@ -9,11 +9,11 @@ def has_digit_or_alpha(value):
         raise serializers.ValidationError()
 
 class CitizenSerializer(serializers.Serializer):
-    citizen_id = serializers.IntegerField(max_value=2147483647, min_value=0)
-    town = serializers.CharField(max_length=255, validators=[has_digit_or_alpha])#validator (has alpha or digit)
-    street = serializers.CharField(max_length=255, validators=[has_digit_or_alpha])#validator (has alpha or digit)
-    building = serializers.CharField(max_length=255, validators=[has_digit_or_alpha])#validator (has alpha or digit)
-    apartment = serializers.IntegerField(max_value=2147483647, min_value=0)
+    citizen_id = serializers.IntegerField(min_value=0, max_value=2147483647)
+    town = serializers.CharField(max_length=255, validators=[has_digit_or_alpha])
+    street = serializers.CharField(max_length=255, validators=[has_digit_or_alpha])
+    building = serializers.CharField(max_length=255, validators=[has_digit_or_alpha])
+    apartment = serializers.IntegerField(min_value=0, max_value=2147483647)
     name = serializers.CharField(max_length=255)
     birth_date = serializers.DateField(input_formats=['%d.%m.%Y'])
     gender = serializers.ChoiceField(choices=['male', 'female'])
@@ -38,19 +38,7 @@ class CitizenSerializer(serializers.Serializer):
         if unknown:
             raise serializers.ValidationError("Unknown field(s): {}".format(", ".join(unknown)))
         return super().to_internal_value(data)
-    '''
-    def validate(self, attrs):
-        if attrs['citizen_id'] == 0:
-            print("AAAAAAAAA", attrs)
-        #print('^^^^^^^^^', attrs.keys())
-        #print('!!!!!!!!!', self.initial_data)
-        #print('@@@@@@@@@', self.fields.keys())
-        unknown =  set(attrs.keys()) - set(self.fields.keys())
-        #print('$$$$$$$$$', unknown)
-        if unknown:
-            raise serializers.ValidationError("Unknown field(s): {}".format(", ".join(unknown)))
-        return attrs
-    '''
+        
     def create(self, validated_data):
         citizen = Citizen.objects.create(
             import_id = get_import_id(),
@@ -62,7 +50,7 @@ class CitizenSerializer(serializers.Serializer):
             name = validated_data['name'],
             birth_date = validated_data['birth_date'],
             gender = validated_data['gender'],
-            relatives=json.dumps(validated_data['relatives'])
+            relatives = json.dumps(validated_data['relatives'])
             )
         return citizen        
     
@@ -76,24 +64,24 @@ class CitizenSerializer(serializers.Serializer):
         instance.birth_date = validated_data.get('birth_date', instance.birth_date)
         instance.gender = validated_data.get('gender', instance.gender)
 
-        current_relatives = set(instance.get_relatives())
-        new_relatives = set(validated_data.get('relatives', instance.relatives))
+        if 'relatives' in validated_data:
+            current_relatives = set(instance.get_relatives())
+            new_relatives = set(validated_data.get('relatives', instance.relatives))
+            for citizen_id in (current_relatives - new_relatives):
+                citizen = Citizen.objects.filter(citizen_id=citizen_id).get(import_id__exact=instance.import_id)
+                new_list = citizen.get_relatives()
+                new_list.remove(instance.citizen_id)
+                citizen.set_relatives(new_list)
+                citizen.save()
 
-        for citizen_id in (current_relatives - new_relatives):
-            citizen = Citizen.objects.filter(citizen_id=citizen_id).get(import_id__exact=instance.import_id)
-            new_list = citizen.get_relatives()
-            new_list.remove(instance.citizen_id)
-            citizen.set_relatives(new_list)
-            citizen.save()
-        
-        for citizen_id in (new_relatives - current_relatives):
-            citizen = Citizen.objects.filter(citizen_id=citizen_id).get(import_id__exact=instance.import_id)
-            new_list = citizen.get_relatives()
-            new_list.append(instance.citizen_id)
-            citizen.set_relatives(new_list)
-            citizen.save()
+            for citizen_id in (new_relatives - current_relatives):
+                citizen = Citizen.objects.filter(citizen_id=citizen_id).get(import_id__exact=instance.import_id)
+                new_list = citizen.get_relatives()
+                new_list.append(instance.citizen_id)
+                citizen.set_relatives(new_list)
+                citizen.save()
 
-        instance.set_relatives(validated_data.get('relatives', instance.relatives))
+            instance.set_relatives(validated_data.get('relatives', instance.relatives))
 
         instance.save()
         return instance

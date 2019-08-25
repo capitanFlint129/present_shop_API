@@ -96,7 +96,7 @@ class ImportsTests(APITestCase):
 
 
 class UpdateTests(APITestCase):
-    def test_update_citizen(self):
+    def test_update(self):
         url = reverse('imports')
         last_count = Citizen.objects.count()
         count = 10000
@@ -141,7 +141,7 @@ class UpdateTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Citizen.objects.count(), count + last_count)
 
-    def test_relatives_imports(self):
+    def test_relatives_update(self):
         url = reverse('imports')
         last_count = Citizen.objects.count()
         count = 10000
@@ -267,12 +267,12 @@ def generate_update(citizen_id, count, dont_change=[]):
 
 def not_unique_generate(count, field):
     imp = generate_import(count)
-    imp['citizens'][0][field] = random.randint(1, count - 1)
+    imp['citizens'][0][field] = imp['citizens'][random.randint(1, count - 1)][field]
     return imp
 
 def negative_generate(count, field):
     imp = generate_import(count)
-    imp['citizens'][0][field] = random.randint(-1000000000,-1)
+    imp['citizens'][0][field] = random.randint(-10000000,-1)
     return imp
 
 def null_generate(count, field):
@@ -329,20 +329,21 @@ def generate_import(count):
     date = str(random.randint(10, 28)) + '.' + str(random.randint(10, 12)) + '.' + str(random.randint(1900, datetime.datetime.utcnow().year + 1))
     relatives = dict()
     relatives[0] = set()
-    for i in range(1000):
-        citizen = 0
-        relative = i + 1
-        relatives[citizen].add(relative)
-        relatives[relative] = {0}
+    
+    #for i in range(1000):
+    #    citizen = 0
+    #    relative = i + 1
+    #    relatives[citizen].add(relative)
+    #    relatives[relative] = {0}
 
-    '''for i in range(random.randint(0, 1000)):
+    for i in range(random.randint(0, 1000)):
         citizen = random.randint(0, count - 1)
         relative = random.randint(0, count - 1)
         if citizen == relative: continue
         if citizen in relatives: relatives[citizen].add(relative)
         else: relatives[citizen] = {relative}
         if relative in relatives: relatives[relative].add(citizen)
-        else: relatives[relative] = {citizen}'''
+        else: relatives[relative] = {citizen}
     for i in range(count):
         rel = []
         if i in relatives:

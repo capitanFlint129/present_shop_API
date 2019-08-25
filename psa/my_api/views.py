@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.parsers import JSONParser
+from rest_framework.parsers import JSONParser, ParseError
 from my_api.models import Citizen
 from my_api.serializers import CitizenSerializer
 from my_api.auxiliary_funcs import is_relative_ties_valid, generate_import_id, get_import_id, add_present, add_age
@@ -11,7 +11,10 @@ import json
 @csrf_exempt
 def imports(request):
     if request.method == 'POST':
-        data = JSONParser().parse(request)
+        try:
+            data = JSONParser().parse(request)
+        except ParseError:
+            return HttpResponse(status=400)
         if not is_relative_ties_valid(data):
             return HttpResponse(status=400)
         try:
@@ -26,18 +29,28 @@ def imports(request):
                     "import_id": get_import_id()
                 }
             }, status=201)    
-        #print('ERRORS', serializer.errors)
+        print('ERRORS', serializer.errors)
         return HttpResponse(status=400)
-    else: return HttpResponse(status=405)
+    else: 
+        return HttpResponse(status=405)
 
 @csrf_exempt
 def update_citizen(request, import_id, citizen_id):
     if request.method == "PATCH":
-        data = JSONParser().parse(request)
+        try:
+            data = JSONParser().parse(request)
+        except ParseError:
+            return HttpResponse(status=400)
         try:
             citizen = Citizen.objects.filter(citizen_id=citizen_id).get(import_id__exact=import_id)
         except Citizen.DoesNotExist:
-            return HttpResponse(status=404) 
+            return HttpResponse(status=404)
+        try:
+            if 'relatives' in data:
+                for relative in data['relatives']:
+                    Citizen.objects.filter(citizen_id=relative).get(import_id__exact=import_id)
+        except Citizen.DoesNotExist:
+            return HttpResponse(status=400) 
         if not data or 'citizen_id' in data:
             return HttpResponse(status=400)
         serializer = CitizenSerializer(citizen, data=data, partial=True)
@@ -46,8 +59,10 @@ def update_citizen(request, import_id, citizen_id):
             return JsonResponse({
                 "data": serializer.data
             }, status=200)
+        print('ERRORS', serializer.errors)
         return HttpResponse(status=400)        
-    else: return HttpResponse(status=405)
+    else: 
+        return HttpResponse(status=405)
 
 @csrf_exempt
 def show_citizens(request, import_id):
@@ -55,7 +70,9 @@ def show_citizens(request, import_id):
         try:
             citizens = Citizen.objects.filter(import_id=import_id)
         except Citizen.DoesNotExist:
-            return HttpResponse(status=404) 
+            return HttpResponse(status=404)
+        if not citizens:
+            return HttpResponse(status=404)
         serializer = CitizenSerializer(citizens, many=True)
         return JsonResponse({
             "data": serializer.data
@@ -68,7 +85,10 @@ def birthdays(request, import_id):
         months = {"1": [], "2": [], "3": [], "4": [], "5": [], "6": [], 
         "7": [], "8": [], "9": [], "10": [], "11": [], "12": []}
         try:
-            for citizen in Citizen.objects.filter(import_id=import_id):
+            citizens = Citizen.objects.filter(import_id=import_id)
+            if not citizens:
+                return HttpResponse(status=404)
+            for citizen in citizens:
                 for relative in citizen.get_relatives():
                     add_present(months[str(citizen.birth_date.month)], relative)
         except Citizen.DoesNotExist:
@@ -83,7 +103,10 @@ def percentile(request, import_id):
     if request.method == "GET":
         cities = dict()
         try:
-            for citizen in Citizen.objects.filter(import_id=import_id):
+            citizens = Citizen.objects.filter(import_id=import_id)
+            if not citizens:
+                return HttpResponse(status=404)
+            for citizen in citizens:
                 add_age(cities, citizen.town, citizen.birth_date)
         except Citizen.DoesNotExist:
             return HttpResponse(status=404)
