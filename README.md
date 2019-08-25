@@ -1,5 +1,5 @@
 # present_shop_API
-RESTful API service for shop of gifts
+RESTful API для магазина подарков
 # Установка
 1) Обновляем пакеты:
     apt-get update
@@ -45,8 +45,7 @@ RESTful API service for shop of gifts
     sudo service nginx restart
 7) Настраиваем gunicorn и supervisor:
     sudo ln -sf /home/entrant/backend_school_project/present_shop_API/etc/psa.conf /etc/supervisor/conf.d/psa.conf
-    sudo supervisorctl reload
-    sudo supervisorctl status
+    sudo update-rc.d supervisor enable
 # Запуск тестов
 Для запуска тестов необходимо выполнить следующую команду:
 /home/entrant/backend_school_project/env/bin/python /home/entrant/backend_school_project/present_shop_API/psa/manage.py test
