@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from my_api.models import Citizen
-from rest_framework_recursive.fields import RecursiveField
 from my_api.auxiliary_funcs import get_import_id
 import json
 

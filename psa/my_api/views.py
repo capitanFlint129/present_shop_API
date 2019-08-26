@@ -46,6 +46,14 @@ def update_citizen(request, import_id, citizen_id):
             return HttpResponse(status=404)
         try:
             if 'relatives' in data:
+                
+                relatives = set()
+                for relative in data['relatives']:
+                    if relative in relatives or relative == citizen_id:
+                        return HttpResponse(status=400)
+                    else:
+                        relatives.add(relative)
+
                 for relative in data['relatives']:
                     Citizen.objects.filter(citizen_id=relative).get(import_id__exact=import_id)
         except Citizen.DoesNotExist:

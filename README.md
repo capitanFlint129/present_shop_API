@@ -6,7 +6,8 @@ RESTful API для магазина подарков
     sudo apt-get upgrade
 2) Устанавливаем необходимые пакеты:
     sudo apt-get install mysql-server python-mysqldb python-profiler w3m python-setuptools libmysqlclient-dev python-dev supervisor nginx
-    sudo apt install python-pip
+    sudo apt install python3-pip
+    pip3 install mysqlclient
 # Развертывание
 1) Установим virtualenv:
     pip3 install virtualenv
@@ -25,7 +26,7 @@ RESTful API для магазина подарков
     sudo mysql -u root -p
     CREATE DATABASE psa CHARACTER SET utf8 COLLATE utf8_general_ci;
     CREATE USER 'psa_user'@'localhost' IDENTIFIED BY '123';
-    GRANT ALL PRIVILEGES ON psa.* TO ‘psa_user'@'localhost';
+    GRANT ALL PRIVILEGES ON psa.* TO 'psa_user'@'localhost';
     exit
 5) Создаем таблицы:
     cd psa
@@ -44,5 +45,9 @@ RESTful API для магазина подарков
     sudo supervisorctl update
     sudo supervisorctl status psa
 # Запуск тестов
-Для запуска тестов необходимо выполнить следующую команду:
-/home/entrant/backend_school_project/env/bin/python /home/entrant/backend_school_project/present_shop_API/psa/manage.py test
+Для запуска тестов необходимо:
+1) Дать права:
+    sudo mysql -u root -p
+    GRANT ALL PRIVILEGES ON test_psa.* TO 'psa_user'@'localhost';
+2) Находясь в директории /home/entrant/backend_school_project/present_shop_API/psa, активировать виртуальную среду и выполнить следующую команду:
+    python manage.py test
