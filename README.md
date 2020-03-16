@@ -5,9 +5,11 @@ RESTful API для магазина подарков
     sudo apt-get update
     sudo apt-get upgrade
 2) Устанавливаем необходимые пакеты:
+    
     sudo apt-get install mysql-server python-mysqldb python-profiler w3m python-setuptools libmysqlclient-dev python-dev supervisor nginx
     
     sudo apt install python3-pip
+    
     pip3 install mysqlclient
 # Развертывание
 1) Установим virtualenv:
