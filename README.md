@@ -2,7 +2,9 @@
 RESTful API для магазина подарков
 # Установка
 1) Обновляем пакеты:
+    
     sudo apt-get update
+    
     sudo apt-get upgrade
 2) Устанавливаем необходимые пакеты:
     
